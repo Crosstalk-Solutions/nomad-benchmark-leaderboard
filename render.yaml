@@ -3,6 +3,7 @@ services:
     name: nomad-benchmark-leaderboard
     runtime: node
     buildCommand: npm ci && npm run build
+    preDeployCommand: cd build && node ace migration:run --force
     startCommand: npm start
     envVars:
       - key: NODE_ENV
