@@ -1,0 +1,75 @@
+{
+  "name": "nomad-benchmark-leaderboard",
+  "version": "1.0.0",
+  "description": "Community benchmark leaderboard for Project NOMAD",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "Crosstalk Solutions, LLC",
+  "scripts": {
+    "start": "node bin/server.js",
+    "build": "node ace build",
+    "dev": "node ace serve --hmr",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "imports": {
+    "#controllers/*": "./app/controllers/*.js",
+    "#exceptions/*": "./app/exceptions/*.js",
+    "#models/*": "./app/models/*.js",
+    "#services/*": "./app/services/*.js",
+    "#middleware/*": "./app/middleware/*.js",
+    "#validators/*": "./app/validators/*.js",
+    "#start/*": "./start/*.js",
+    "#config/*": "./config/*.js",
+    "#database/*": "./database/*.js"
+  },
+  "devDependencies": {
+    "@adonisjs/assembler": "^7.8.2",
+    "@adonisjs/eslint-config": "^2.0.0",
+    "@adonisjs/prettier-config": "^1.4.4",
+    "@adonisjs/tsconfig": "^1.4.0",
+    "@swc/core": "^1.11.24",
+    "@types/luxon": "^3.6.2",
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9.26.0",
+    "hot-hook": "^0.4.0",
+    "prettier": "^3.5.3",
+    "ts-node-maintained": "^10.9.6",
+    "typescript": "~5.8.3",
+    "vite": "^6.4.1"
+  },
+  "dependencies": {
+    "@adonisjs/core": "^6.18.0",
+    "@adonisjs/cors": "^2.2.1",
+    "@adonisjs/inertia": "^3.1.1",
+    "@adonisjs/lucid": "^21.8.2",
+    "@adonisjs/static": "^1.1.1",
+    "@adonisjs/vite": "^4.0.0",
+    "@inertiajs/react": "^2.0.13",
+    "@tailwindcss/vite": "^4.1.10",
+    "@vinejs/vine": "^3.0.1",
+    "@vitejs/plugin-react": "^4.6.0",
+    "better-sqlite3": "^12.1.1",
+    "edge.js": "^6.2.1",
+    "luxon": "^3.6.1",
+    "pino-pretty": "^13.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "recharts": "^2.15.0",
+    "reflect-metadata": "^0.2.2",
+    "tailwindcss": "^4.1.10",
+    "uuid": "^13.0.0"
+  },
+  "hotHook": {
+    "boundaries": [
+      "./app/controllers/**/*.ts",
+      "./app/middleware/*.ts"
+    ]
+  },
+  "prettier": "@adonisjs/prettier-config"
+}
