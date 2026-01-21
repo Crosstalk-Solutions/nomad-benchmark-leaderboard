@@ -1,2 +1,2 @@
-web: cd build && node bin/server.js
+web: npm start
 release: cd build && node ace migration:run --force
