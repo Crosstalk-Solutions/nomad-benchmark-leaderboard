@@ -28,11 +28,6 @@
   "devDependencies": {
     "@adonisjs/eslint-config": "^2.0.0",
     "@adonisjs/prettier-config": "^1.4.4",
-    "@types/luxon": "^3.6.2",
-    "@types/node": "^22.15.18",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@types/uuid": "^10.0.0",
     "eslint": "^9.26.0",
     "hot-hook": "^0.4.0",
     "prettier": "^3.5.3"
@@ -40,6 +35,11 @@
   "dependencies": {
     "@adonisjs/assembler": "^7.8.2",
     "@adonisjs/core": "^6.18.0",
+    "@types/luxon": "^3.6.2",
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@types/uuid": "^10.0.0",
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/inertia": "^3.1.1",
     "@adonisjs/lucid": "^21.8.2",
