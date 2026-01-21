@@ -1,2 +1,2 @@
-web: node bin/server.js
-release: node ace migration:run --force
+web: cd build && node bin/server.js
+release: cd build && node ace migration:run --force
