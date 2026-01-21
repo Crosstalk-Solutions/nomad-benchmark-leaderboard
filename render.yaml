@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: nomad-benchmark-leaderboard
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: APP_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
