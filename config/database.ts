@@ -3,8 +3,9 @@ import { defineConfig } from '@adonisjs/lucid'
 import { existsSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 
-// Ensure database directory exists
-const dbPath = app.makePath('tmp/database.sqlite')
+// Use DATABASE_PATH env var if set (for persistent storage on Render),
+// otherwise fall back to tmp directory (for local development)
+const dbPath = process.env.DATABASE_PATH || app.makePath('tmp/database.sqlite')
 const dbDir = dirname(dbPath)
 if (!existsSync(dbDir)) {
   mkdirSync(dbDir, { recursive: true })
