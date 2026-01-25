@@ -51,6 +51,7 @@ export default class LeaderboardController {
         'ai_tokens_per_second',
         'nomad_score',
         'nomad_version',
+        'builder_tag',
         'created_at',
       ])
 
