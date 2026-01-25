@@ -135,6 +135,13 @@ export default function Home({ stats, recentSubmissions }: Props) {
                             {submission.nomad_score.toFixed(1)}
                           </span>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {submission.builder_tag ? (
+                            <span className="font-medium text-emerald-700">{submission.builder_tag}</span>
+                          ) : (
+                            <span className="text-gray-400 italic">Anonymous</span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {submission.builder_tag || 'Anonymous'}
                         </td>
