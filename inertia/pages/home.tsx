@@ -12,6 +12,7 @@ interface Props {
     cpu_model: string
     gpu_model: string | null
     nomad_score: number
+    builder_tag: string | null
     created_at: string
   }>
 }
@@ -113,6 +114,9 @@ export default function Home({ stats, recentSubmissions }: Props) {
                         Score
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Builder
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         CPU
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -130,6 +134,9 @@ export default function Home({ stats, recentSubmissions }: Props) {
                           <span className={`text-lg font-bold ${getScoreColor(submission.nomad_score)}`}>
                             {submission.nomad_score.toFixed(1)}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {submission.builder_tag || 'Anonymous'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {submission.cpu_model}

@@ -17,6 +17,7 @@ export default class LeaderboardController {
         'cpu_model',
         'gpu_model',
         'nomad_score',
+        'builder_tag',
         'created_at',
       ])
 
