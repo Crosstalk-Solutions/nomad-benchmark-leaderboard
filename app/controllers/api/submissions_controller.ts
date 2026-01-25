@@ -3,6 +3,37 @@ import Submission from '#models/submission'
 import { submitValidator, leaderboardQueryValidator } from '#validators/submission_validator'
 import { StatsService } from '#services/stats_service'
 import { v4 as uuidv4 } from 'uuid'
+import crypto from 'node:crypto'
+
+// Plausibility bounds - generous limits for future hardware
+// If you believe your result was incorrectly rejected, open an issue:
+// https://github.com/Crosstalk-Solutions/nomad-benchmark-leaderboard/issues
+const PLAUSIBILITY_LIMITS = {
+  ai_tokens_per_second: { max: 500 }, // Even high-end GPUs rarely exceed 200
+  ai_time_to_first_token: { min: 0.01 }, // Can't be essentially instant
+  cpu_cores: { max: 256 },
+  cpu_threads: { max: 512 },
+  ram_gb: { max: 2048 },
+}
+
+/**
+ * Generate a hardware fingerprint for duplicate detection
+ * Format: SHA256 hash of "cpu_model|gpu_model|ram_gb|builder_tag"
+ */
+function generateFingerprint(
+  cpuModel: string,
+  gpuModel: string | null,
+  ramGb: number,
+  builderTag: string | null
+): string {
+  const components = [
+    cpuModel.toLowerCase().trim(),
+    (gpuModel || 'none').toLowerCase().trim(),
+    ramGb.toString(),
+    (builderTag || 'anonymous').toLowerCase().trim(),
+  ]
+  return crypto.createHash('sha256').update(components.join('|')).digest('hex')
+}
 
 export default class SubmissionsController {
   /**
@@ -20,10 +51,84 @@ export default class SubmissionsController {
       })
     }
 
-    // Generate unique repository ID
+    // Plausibility checks - reject obviously impossible values
+    if (data.ai_tokens_per_second && data.ai_tokens_per_second > PLAUSIBILITY_LIMITS.ai_tokens_per_second.max) {
+      return response.status(400).json({
+        success: false,
+        error: `AI tokens per second (${data.ai_tokens_per_second}) exceeds plausible maximum (${PLAUSIBILITY_LIMITS.ai_tokens_per_second.max}). If you believe this is a valid result, please open an issue: https://github.com/Crosstalk-Solutions/nomad-benchmark-leaderboard/issues`,
+      })
+    }
+
+    if (data.ai_time_to_first_token && data.ai_time_to_first_token < PLAUSIBILITY_LIMITS.ai_time_to_first_token.min) {
+      return response.status(400).json({
+        success: false,
+        error: `AI time to first token (${data.ai_time_to_first_token}s) is below plausible minimum (${PLAUSIBILITY_LIMITS.ai_time_to_first_token.min}s). If you believe this is a valid result, please open an issue: https://github.com/Crosstalk-Solutions/nomad-benchmark-leaderboard/issues`,
+      })
+    }
+
+    // Generate hardware fingerprint for duplicate detection
+    const fingerprint = generateFingerprint(
+      data.cpu_model,
+      data.gpu_model || null,
+      data.ram_gb,
+      data.builder_tag || null
+    )
+
+    // Get submitter IP for abuse tracking (never exposed publicly)
+    const submitterIp = request.ip()
+
+    // Check for existing submission with same fingerprint
+    const existingSubmission = await Submission.query()
+      .where('hardware_fingerprint', fingerprint)
+      .first()
+
+    if (existingSubmission) {
+      // Duplicate detected - check if new score is higher
+      if (data.nomad_score <= existingSubmission.nomad_score) {
+        return response.status(409).json({
+          success: false,
+          error: `A submission with this hardware configuration and Builder Tag already exists with a higher or equal score (${existingSubmission.nomad_score.toFixed(1)} vs your ${data.nomad_score.toFixed(1)}). Run another benchmark to try for a higher score.`,
+          existing_score: existingSubmission.nomad_score,
+          existing_repository_id: existingSubmission.repository_id,
+        })
+      }
+
+      // New score is higher - update existing entry
+      existingSubmission.merge({
+        cpu_model: data.cpu_model,
+        cpu_cores: data.cpu_cores,
+        cpu_threads: data.cpu_threads,
+        ram_gb: data.ram_gb,
+        disk_type: data.disk_type,
+        gpu_model: data.gpu_model || null,
+        cpu_score: data.cpu_score,
+        memory_score: data.memory_score,
+        disk_read_score: data.disk_read_score,
+        disk_write_score: data.disk_write_score,
+        ai_tokens_per_second: data.ai_tokens_per_second || null,
+        ai_time_to_first_token: data.ai_time_to_first_token || null,
+        nomad_score: data.nomad_score,
+        nomad_version: data.nomad_version,
+        benchmark_version: data.benchmark_version,
+        builder_tag: data.builder_tag || null,
+        submitter_ip: submitterIp,
+      })
+      await existingSubmission.save()
+
+      const percentile = await StatsService.calculatePercentile(existingSubmission.nomad_score)
+
+      return response.status(200).json({
+        success: true,
+        repository_id: existingSubmission.repository_id,
+        percentile,
+        updated: true,
+        message: 'Your previous submission has been updated with your new higher score.',
+      })
+    }
+
+    // No duplicate - create new submission
     const repositoryId = uuidv4()
 
-    // Create submission
     const submission = await Submission.create({
       repository_id: repositoryId,
       cpu_model: data.cpu_model,
@@ -41,8 +146,9 @@ export default class SubmissionsController {
       nomad_score: data.nomad_score,
       nomad_version: data.nomad_version,
       benchmark_version: data.benchmark_version,
-      // Optional: older NOMAD versions won't send this, defaults to null (anonymous)
       builder_tag: data.builder_tag || null,
+      hardware_fingerprint: fingerprint,
+      submitter_ip: submitterIp,
     })
 
     // Calculate percentile

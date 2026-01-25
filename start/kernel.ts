@@ -14,4 +14,5 @@ router.use([() => import('@adonisjs/core/bodyparser_middleware')])
 
 export const middleware = router.named({
   rateLimit: () => import('#middleware/rate_limit'),
+  hmacVerify: () => import('#middleware/hmac_verify'),
 })

@@ -58,6 +58,14 @@ export default class Submission extends BaseModel {
   @column()
   declare builder_tag: string | null
 
+  // Hardware fingerprint for duplicate detection (hash of cpu|gpu|ram|tag)
+  @column()
+  declare hardware_fingerprint: string | null
+
+  // Submitter IP for abuse tracking - NEVER expose in API responses
+  @column({ serializeAs: null }) // Excludes from serialization
+  declare submitter_ip: string | null
+
   @column.dateTime({ autoCreate: true })
   declare created_at: DateTime
 }

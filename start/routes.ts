@@ -11,7 +11,9 @@ router.get('/leaderboard', [LeaderboardController, 'leaderboard'])
 // API routes
 router
   .group(() => {
-    router.post('/submit', [SubmissionsController, 'submit']).use(middleware.rateLimit())
+    router
+      .post('/submit', [SubmissionsController, 'submit'])
+      .use([middleware.hmacVerify(), middleware.rateLimit()])
     router.get('/leaderboard', [SubmissionsController, 'leaderboard'])
     router.get('/stats', [SubmissionsController, 'stats'])
     router.get('/submission/:id', [SubmissionsController, 'show'])

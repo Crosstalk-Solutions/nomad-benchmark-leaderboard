@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
+import env from '#start/env'
 
 // In-memory rate limit store (no IP persistence)
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>()
@@ -18,11 +19,19 @@ setInterval(
 )
 
 export default class RateLimitMiddleware {
-  // 10 submissions per hour per IP
-  private readonly maxRequests = 10
+  // 1 submission per hour per IP
+  private readonly maxRequests = 1
   private readonly windowMs = 60 * 60 * 1000 // 1 hour
 
   async handle(ctx: HttpContext, next: NextFn) {
+    // Dev mode bypass - check for valid dev API key
+    const devKey = ctx.request.header('X-Dev-Key')
+    const configuredDevKey = env.get('DEV_API_KEY')
+    if (devKey && configuredDevKey && devKey === configuredDevKey) {
+      // Dev mode - skip rate limiting
+      return next()
+    }
+
     const ip = ctx.request.ip()
     const now = Date.now()
 
@@ -46,7 +55,7 @@ export default class RateLimitMiddleware {
       ctx.response.header('Retry-After', retryAfter.toString())
       return ctx.response.status(429).json({
         success: false,
-        error: 'Too many submissions. Please try again later.',
+        error: 'Rate limit exceeded. You may submit one benchmark per hour.',
         retryAfter,
       })
     }
