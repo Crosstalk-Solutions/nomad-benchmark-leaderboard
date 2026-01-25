@@ -41,6 +41,8 @@ export default class SubmissionsController {
       nomad_score: data.nomad_score,
       nomad_version: data.nomad_version,
       benchmark_version: data.benchmark_version,
+      // Optional: older NOMAD versions won't send this, defaults to null (anonymous)
+      builder_tag: data.builder_tag || null,
     })
 
     // Calculate percentile
@@ -87,6 +89,7 @@ export default class SubmissionsController {
         'nomad_score',
         'nomad_version',
         'benchmark_version',
+        'builder_tag',
         'created_at',
       ])
 

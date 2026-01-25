@@ -17,6 +17,8 @@ export const submitValidator = vine.compile(
     nomad_score: vine.number().min(0).max(100),
     nomad_version: vine.string().trim().minLength(1).maxLength(50),
     benchmark_version: vine.string().trim().minLength(1).maxLength(50),
+    // Optional: older NOMAD versions won't send this field
+    builder_tag: vine.string().trim().maxLength(64).optional(),
   })
 )
 

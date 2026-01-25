@@ -55,6 +55,9 @@ export default class Submission extends BaseModel {
   @column()
   declare benchmark_version: string
 
+  @column()
+  declare builder_tag: string | null
+
   @column.dateTime({ autoCreate: true })
   declare created_at: DateTime
 }

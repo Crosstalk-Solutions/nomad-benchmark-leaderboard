@@ -16,6 +16,7 @@ interface Submission {
   ai_tokens_per_second: number | null
   nomad_score: number
   nomad_version: string
+  builder_tag: string | null
   created_at: string
 }
 
@@ -56,6 +57,9 @@ export default function LeaderboardTable({ submissions }: LeaderboardTableProps)
               Rank
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Builder
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               NOMAD Score
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -87,6 +91,15 @@ export default function LeaderboardTable({ submissions }: LeaderboardTableProps)
                 >
                   {submission.rank}
                 </span>
+              </td>
+              <td className="px-4 py-4 whitespace-nowrap">
+                {submission.builder_tag ? (
+                  <span className="font-mono text-sm font-medium text-emerald-700">
+                    {submission.builder_tag}
+                  </span>
+                ) : (
+                  <span className="text-sm text-gray-400 italic">Anonymous</span>
+                )}
               </td>
               <td className="px-4 py-4 whitespace-nowrap">
                 <span className={`text-lg font-bold ${getScoreColor(submission.nomad_score)}`}>

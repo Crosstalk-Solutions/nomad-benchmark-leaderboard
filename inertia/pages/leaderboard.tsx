@@ -20,6 +20,7 @@ interface Submission {
   ai_tokens_per_second: number | null
   nomad_score: number
   nomad_version: string
+  builder_tag: string | null
   created_at: string
 }
 
