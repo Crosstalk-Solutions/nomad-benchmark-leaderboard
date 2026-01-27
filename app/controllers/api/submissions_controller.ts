@@ -4,6 +4,7 @@ import { submitValidator, leaderboardQueryValidator } from '#validators/submissi
 import { StatsService } from '#services/stats_service'
 import { v4 as uuidv4 } from 'uuid'
 import crypto from 'node:crypto'
+import db from '@adonisjs/lucid/services/db'
 
 // Plausibility bounds - generous limits for future hardware
 // If you believe your result was incorrectly rejected, open an issue:
@@ -77,24 +78,63 @@ export default class SubmissionsController {
     // Get submitter IP for abuse tracking (never exposed publicly)
     const submitterIp = request.ip()
 
-    // Check for existing submission with same fingerprint
-    const existingSubmission = await Submission.query()
-      .where('hardware_fingerprint', fingerprint)
-      .first()
+    // Use a transaction to prevent race conditions in duplicate detection
+    const result = await db.transaction(async (trx) => {
+      const existingSubmission = await Submission.query({ client: trx })
+        .where('hardware_fingerprint', fingerprint)
+        .first()
 
-    if (existingSubmission) {
-      // Duplicate detected - check if new score is higher
-      if (data.nomad_score <= existingSubmission.nomad_score) {
-        return response.status(409).json({
-          success: false,
-          error: `A submission with this hardware configuration and Builder Tag already exists with a higher or equal score (${existingSubmission.nomad_score.toFixed(1)} vs your ${data.nomad_score.toFixed(1)}). Run another benchmark to try for a higher score.`,
-          existing_score: existingSubmission.nomad_score,
-          existing_repository_id: existingSubmission.repository_id,
+      if (existingSubmission) {
+        // Duplicate detected - check if new score is higher
+        if (data.nomad_score <= existingSubmission.nomad_score) {
+          return {
+            status: 409,
+            body: {
+              success: false,
+              error: `A submission with this hardware configuration and Builder Tag already exists with a higher or equal score (${existingSubmission.nomad_score.toFixed(1)} vs your ${data.nomad_score.toFixed(1)}). Run another benchmark to try for a higher score.`,
+              existing_score: existingSubmission.nomad_score,
+              existing_repository_id: existingSubmission.repository_id,
+            },
+          }
+        }
+
+        // New score is higher - update existing entry
+        existingSubmission.useTransaction(trx)
+        existingSubmission.merge({
+          cpu_model: data.cpu_model,
+          cpu_cores: data.cpu_cores,
+          cpu_threads: data.cpu_threads,
+          ram_gb: data.ram_gb,
+          disk_type: data.disk_type,
+          gpu_model: data.gpu_model || null,
+          cpu_score: data.cpu_score,
+          memory_score: data.memory_score,
+          disk_read_score: data.disk_read_score,
+          disk_write_score: data.disk_write_score,
+          ai_tokens_per_second: data.ai_tokens_per_second || null,
+          ai_time_to_first_token: data.ai_time_to_first_token || null,
+          nomad_score: data.nomad_score,
+          nomad_version: data.nomad_version,
+          benchmark_version: data.benchmark_version,
+          builder_tag: data.builder_tag || null,
+          submitter_ip: submitterIp,
         })
+        await existingSubmission.save()
+
+        return {
+          status: 200,
+          repositoryId: existingSubmission.repository_id,
+          nomadScore: existingSubmission.nomad_score,
+          updated: true,
+        }
       }
 
-      // New score is higher - update existing entry
-      existingSubmission.merge({
+      // No duplicate - create new submission
+      const repositoryId = uuidv4()
+      const submission = new Submission()
+      submission.useTransaction(trx)
+      submission.fill({
+        repository_id: repositoryId,
         cpu_model: data.cpu_model,
         cpu_cores: data.cpu_cores,
         cpu_threads: data.cpu_threads,
@@ -111,52 +151,40 @@ export default class SubmissionsController {
         nomad_version: data.nomad_version,
         benchmark_version: data.benchmark_version,
         builder_tag: data.builder_tag || null,
+        hardware_fingerprint: fingerprint,
         submitter_ip: submitterIp,
       })
-      await existingSubmission.save()
+      await submission.save()
 
-      const percentile = await StatsService.calculatePercentile(existingSubmission.nomad_score)
+      return {
+        status: 201,
+        repositoryId,
+        nomadScore: submission.nomad_score,
+        updated: false,
+      }
+    })
 
+    // Handle rejection (duplicate with lower score)
+    if (result.status === 409) {
+      return response.status(409).json(result.body)
+    }
+
+    // Calculate percentile outside the transaction to minimize lock duration
+    const percentile = await StatsService.calculatePercentile(result.nomadScore!)
+
+    if (result.updated) {
       return response.status(200).json({
         success: true,
-        repository_id: existingSubmission.repository_id,
+        repository_id: result.repositoryId,
         percentile,
         updated: true,
         message: 'Your previous submission has been updated with your new higher score.',
       })
     }
 
-    // No duplicate - create new submission
-    const repositoryId = uuidv4()
-
-    const submission = await Submission.create({
-      repository_id: repositoryId,
-      cpu_model: data.cpu_model,
-      cpu_cores: data.cpu_cores,
-      cpu_threads: data.cpu_threads,
-      ram_gb: data.ram_gb,
-      disk_type: data.disk_type,
-      gpu_model: data.gpu_model || null,
-      cpu_score: data.cpu_score,
-      memory_score: data.memory_score,
-      disk_read_score: data.disk_read_score,
-      disk_write_score: data.disk_write_score,
-      ai_tokens_per_second: data.ai_tokens_per_second || null,
-      ai_time_to_first_token: data.ai_time_to_first_token || null,
-      nomad_score: data.nomad_score,
-      nomad_version: data.nomad_version,
-      benchmark_version: data.benchmark_version,
-      builder_tag: data.builder_tag || null,
-      hardware_fingerprint: fingerprint,
-      submitter_ip: submitterIp,
-    })
-
-    // Calculate percentile
-    const percentile = await StatsService.calculatePercentile(submission.nomad_score)
-
     return response.status(201).json({
       success: true,
-      repository_id: repositoryId,
+      repository_id: result.repositoryId,
       percentile,
     })
   }

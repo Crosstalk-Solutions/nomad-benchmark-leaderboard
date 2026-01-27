@@ -106,6 +106,36 @@ Two migration files in `database/migrations/`:
 - `GET /api/v1/submission/:id` — Get specific submission
 - `GET /api/health` — Health check (returns `{ status: 'ok' }`)
 
+## Security
+
+### HMAC Submission Authentication
+- Submissions require HMAC-SHA256 signature via `X-NOMAD-Signature` and `X-NOMAD-Timestamp` headers
+- The shared secret (`nomad-benchmark-v1-2026`) is hardcoded in the open-source NOMAD client (`admin/app/services/benchmark_service.ts`). **Do not change** the default secret — it would break all NOMAD installations in the field. This is a casual abuse deterrent, not true authentication.
+- Verification uses raw request body bytes (`ctx.request.raw()`) for reliable signature matching
+- Timestamps must be within 5 minutes to prevent replay attacks
+- Constant-time comparison (`crypto.timingSafeEqual`) prevents timing attacks
+
+### CORS
+- Origin restricted to `https://benchmark.projectnomad.us` only (no wildcard)
+- NOMAD servers submit via Node.js axios (server-to-server), so CORS does not apply to benchmark submissions
+- Credentials disabled since auth uses HMAC headers, not cookies
+
+### Security Headers Middleware (`app/middleware/security_headers.ts`)
+Applied globally via `start/kernel.ts` (runs before all other middleware):
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Content-Security-Policy` — restricts sources to `'self'` with `'unsafe-inline'` for scripts/styles (required by Vite/Inertia)
+
+### Duplicate Detection
+- Uses database transactions to prevent race conditions during fingerprint check + insert/update
+- Hardware fingerprint: SHA256 hash of `cpu_model|gpu_model|ram_gb|builder_tag`
+- Only higher scores replace existing entries for the same fingerprint
+
+### Validation
+- `builder_tag` max length: 100 chars (matches both validator and DB schema)
+- `submitter_ip` is stored but never serialized to API responses (`serializeAs: null` on model)
+
 ## Development
 ```bash
 npm install

@@ -45,8 +45,8 @@ export default class HmacVerifyMiddleware {
     }
 
     // Get the raw body for signature verification
-    // Note: We need to use the raw JSON string, not the parsed object
-    const rawBody = JSON.stringify(ctx.request.body())
+    // Use the actual raw bytes received, not a re-serialized version of the parsed object
+    const rawBody = ctx.request.raw() || JSON.stringify(ctx.request.body())
 
     // Calculate expected signature: HMAC-SHA256(secret, timestamp + body)
     const payload = timestamp + rawBody
