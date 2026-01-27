@@ -29,6 +29,10 @@ yarn-error.log*
 # Database
 database/*.sqlite
 database/*.sqlite-journal
+tmp/
+
+# Claude Code
+.claude/
 
 # Testing
 coverage
