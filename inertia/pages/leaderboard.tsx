@@ -51,9 +51,9 @@ export default function Leaderboard({ submissions, stats }: Props) {
     <>
       <Head title="Leaderboard" />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-nomad-cream">
         {/* Header */}
-        <header className="bg-white shadow-sm">
+        <header className="bg-nomad-cream border-b border-nomad-olive-mid/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -64,15 +64,15 @@ export default function Leaderboard({ submissions, stats }: Props) {
                     className="w-10 h-10 rounded-lg"
                   />
                   <div>
-                    <h1 className="text-xl font-bold text-gray-900">NOMAD Benchmark</h1>
-                    <p className="text-xs text-gray-500">Community Leaderboard</p>
+                    <h1 className="text-xl font-bold text-nomad-olive">NOMAD Benchmark</h1>
+                    <p className="text-xs text-nomad-olive-mid">Community Leaderboard</p>
                   </div>
                 </Link>
               </div>
               <nav className="flex items-center space-x-4">
                 <Link
                   href="/"
-                  className="text-sm font-medium text-gray-700 hover:text-emerald-600"
+                  className="text-sm font-medium text-nomad-olive-mid hover:text-nomad-olive"
                 >
                   Home
                 </Link>
@@ -80,7 +80,7 @@ export default function Leaderboard({ submissions, stats }: Props) {
                   href="https://github.com/Crosstalk-Solutions/project-nomad"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-gray-700 hover:text-emerald-600"
+                  className="text-sm font-medium text-nomad-olive-mid hover:text-nomad-olive"
                 >
                   GitHub
                 </a>
@@ -94,8 +94,11 @@ export default function Leaderboard({ submissions, stats }: Props) {
           {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900">Leaderboard</h2>
-              <p className="mt-1 text-gray-600">
+              <h2 className="text-3xl font-bold text-nomad-olive flex items-center">
+                <span className="w-1 h-8 bg-nomad-olive rounded-full mr-3"></span>
+                Leaderboard
+              </h2>
+              <p className="mt-1 text-nomad-olive-mid ml-4">
                 {stats.total_submissions} systems benchmarked
               </p>
             </div>
@@ -105,7 +108,7 @@ export default function Leaderboard({ submissions, stats }: Props) {
           </div>
 
           {/* Content */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-nomad-surface border border-nomad-olive-mid/20 rounded-xl overflow-hidden">
             {view === 'rankings' ? (
               <LeaderboardTable submissions={submissions} />
             ) : (
@@ -116,11 +119,11 @@ export default function Leaderboard({ submissions, stats }: Props) {
           </div>
 
           {/* Info Section */}
-          <div className="mt-8 bg-emerald-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-emerald-900 mb-2">
+          <div className="mt-8 bg-nomad-olive-light border border-nomad-olive-mid/20 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-nomad-olive mb-2">
               How to Submit Your Benchmark
             </h3>
-            <p className="text-emerald-800">
+            <p className="text-nomad-olive-mid">
               Run the System Benchmark from your NOMAD installation's Settings page.
               Once complete, you can submit your results to this community leaderboard
               to see how your hardware compares.
@@ -130,7 +133,7 @@ export default function Leaderboard({ submissions, stats }: Props) {
                 href="https://github.com/Crosstalk-Solutions/project-nomad"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-emerald-700 hover:text-emerald-800 font-medium"
+                className="inline-flex items-center text-nomad-rust hover:text-nomad-rust-dark font-medium"
               >
                 Get Project N.O.M.A.D.
                 <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,19 +145,19 @@ export default function Leaderboard({ submissions, stats }: Props) {
         </main>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-gray-200 mt-16">
+        <footer className="border-t border-nomad-olive-mid/20 mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center text-gray-500 text-sm">
+            <div className="text-center text-nomad-olive-mid text-sm">
               <p>NOMAD Benchmark Leaderboard - A Project N.O.M.A.D. Community Resource</p>
-              <p className="mt-2">
+              <p className="mt-2 flex items-center justify-center gap-1.5">
                 Built by{' '}
                 <a
                   href="https://crosstalksolutions.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-600 hover:text-emerald-700"
+                  className="inline-flex items-center hover:opacity-80 transition-opacity"
                 >
-                  Crosstalk Solutions
+                  <img src="/crosstalk-solutions-logo.png" alt="Crosstalk Solutions" className="h-5" />
                 </a>
               </p>
             </div>

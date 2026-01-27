@@ -31,7 +31,7 @@ interface StatsChartsProps {
   stats: Stats
 }
 
-const DISTRIBUTION_COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#10b981']
+const DISTRIBUTION_COLORS = ['#ef4444', '#A84A12', '#eab308', '#6D7042', '#424420']
 
 export default function StatsCharts({ stats }: StatsChartsProps) {
   const distributionData = [
@@ -46,7 +46,7 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
 
   if (stats.total_submissions === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-nomad-olive-mid">
         No data available yet. Statistics will appear once submissions are received.
       </div>
     )
@@ -56,32 +56,42 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
     <div className="space-y-8">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-3xl font-bold text-gray-900">{stats.total_submissions}</div>
-          <div className="text-sm text-gray-500">Total Submissions</div>
+        <div className="bg-nomad-surface border border-nomad-olive-mid/20 rounded-lg p-6">
+          <div className="text-3xl font-bold text-nomad-olive">{stats.total_submissions}</div>
+          <div className="text-sm text-nomad-olive-mid uppercase tracking-wider">Total Submissions</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-3xl font-bold text-emerald-600">{stats.average_nomad_score}</div>
-          <div className="text-sm text-gray-500">Average Score</div>
+        <div className="bg-nomad-surface border border-nomad-olive-mid/20 rounded-lg p-6">
+          <div className="text-3xl font-bold text-nomad-olive">{stats.average_nomad_score}</div>
+          <div className="text-sm text-nomad-olive-mid uppercase tracking-wider">Average Score</div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-3xl font-bold text-blue-600">{stats.median_nomad_score}</div>
-          <div className="text-sm text-gray-500">Median Score</div>
+        <div className="bg-nomad-surface border border-nomad-olive-mid/20 rounded-lg p-6">
+          <div className="text-3xl font-bold text-nomad-rust">{stats.median_nomad_score}</div>
+          <div className="text-sm text-nomad-olive-mid uppercase tracking-wider">Median Score</div>
         </div>
       </div>
 
       {/* Score Distribution */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Score Distribution</h3>
+      <div className="bg-nomad-surface border border-nomad-olive-mid/20 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-nomad-olive mb-4 flex items-center">
+          <span className="w-1 h-5 bg-nomad-olive rounded-full mr-2"></span>
+          Score Distribution
+        </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={distributionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="range" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" name="Submissions">
+                <CartesianGrid strokeDasharray="3 3" stroke="#6D704233" />
+                <XAxis dataKey="range" tick={{ fill: '#6D7042' }} />
+                <YAxis tick={{ fill: '#6D7042' }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#F6F6F4',
+                    border: '1px solid #6D704233',
+                    borderRadius: '8px',
+                    color: '#424420',
+                  }}
+                />
+                <Bar dataKey="count" name="Submissions" radius={[4, 4, 0, 0]}>
                   {distributionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
@@ -105,7 +115,14 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#F6F6F4',
+                    border: '1px solid #6D704233',
+                    borderRadius: '8px',
+                    color: '#424420',
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -115,47 +132,55 @@ export default function StatsCharts({ stats }: StatsChartsProps) {
       {/* Top Hardware */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top CPUs */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top CPU Models</h3>
-          {stats.top_cpu_models.length === 0 ? (
-            <p className="text-gray-500 text-sm">No data available</p>
-          ) : (
-            <div className="space-y-3">
-              {stats.top_cpu_models.slice(0, 5).map((cpu, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{cpu.model}</p>
-                    <p className="text-xs text-gray-500">{cpu.count} submissions</p>
+        <div className="bg-nomad-surface border border-nomad-olive-mid/20 rounded-lg overflow-hidden">
+          <div className="bg-nomad-olive px-6 py-3">
+            <h3 className="text-sm font-semibold text-nomad-surface uppercase tracking-wider">Top CPU Models</h3>
+          </div>
+          <div className="p-6">
+            {stats.top_cpu_models.length === 0 ? (
+              <p className="text-nomad-olive-mid text-sm">No data available</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.top_cpu_models.slice(0, 5).map((cpu, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-nomad-text truncate">{cpu.model}</p>
+                      <p className="text-xs text-nomad-text-muted">{cpu.count} submissions</p>
+                    </div>
+                    <div className="ml-4 text-sm font-semibold text-nomad-rust">
+                      Avg: {cpu.avgScore}
+                    </div>
                   </div>
-                  <div className="ml-4 text-sm font-semibold text-emerald-600">
-                    Avg: {cpu.avgScore}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Top GPUs */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top GPU Models</h3>
-          {stats.top_gpu_models.length === 0 ? (
-            <p className="text-gray-500 text-sm">No data available</p>
-          ) : (
-            <div className="space-y-3">
-              {stats.top_gpu_models.slice(0, 5).map((gpu, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{gpu.model}</p>
-                    <p className="text-xs text-gray-500">{gpu.count} submissions</p>
+        <div className="bg-nomad-surface border border-nomad-olive-mid/20 rounded-lg overflow-hidden">
+          <div className="bg-nomad-olive px-6 py-3">
+            <h3 className="text-sm font-semibold text-nomad-surface uppercase tracking-wider">Top GPU Models</h3>
+          </div>
+          <div className="p-6">
+            {stats.top_gpu_models.length === 0 ? (
+              <p className="text-nomad-olive-mid text-sm">No data available</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.top_gpu_models.slice(0, 5).map((gpu, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-nomad-text truncate">{gpu.model}</p>
+                      <p className="text-xs text-nomad-text-muted">{gpu.count} submissions</p>
+                    </div>
+                    <div className="ml-4 text-sm font-semibold text-nomad-rust">
+                      Avg: {gpu.avgScore}
+                    </div>
                   </div>
-                  <div className="ml-4 text-sm font-semibold text-emerald-600">
-                    Avg: {gpu.avgScore}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

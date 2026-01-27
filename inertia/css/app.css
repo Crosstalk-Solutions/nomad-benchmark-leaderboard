@@ -1,1 +1,17 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-nomad-cream: #F7EEDC;
+  --color-nomad-surface: #F6F6F4;
+  --color-nomad-olive: #424420;
+  --color-nomad-olive-dark: #353518;
+  --color-nomad-olive-mid: #6D7042;
+  --color-nomad-olive-light: #E8E9D4;
+  --color-nomad-olive-faint: #F0F1E4;
+  --color-nomad-rust: #A84A12;
+  --color-nomad-rust-dark: #8B3D0F;
+  --color-nomad-rust-light: #D4874A;
+  --color-nomad-gray: #AFAFA5;
+  --color-nomad-text: #424420;
+  --color-nomad-text-muted: #6D7042;
+}
