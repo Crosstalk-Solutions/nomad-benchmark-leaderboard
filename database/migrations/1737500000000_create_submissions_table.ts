@@ -22,6 +22,7 @@ export default class extends BaseSchema {
       table.float('nomad_score').notNullable()
       table.string('nomad_version').notNullable()
       table.string('benchmark_version').notNullable()
+      table.string('builder_tag', 100).nullable()
       table.timestamp('created_at')
     })
 
