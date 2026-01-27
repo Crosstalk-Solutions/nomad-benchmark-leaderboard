@@ -76,11 +76,35 @@ database/migrations/    — SQLite schema migrations
 public/                 — Static assets (logos, favicons)
 ```
 
+## Database
+
+### Migrations
+Two migration files in `database/migrations/`:
+1. `1737500000000_create_submissions_table.ts` — Creates the `submissions` table with all columns including `builder_tag`
+2. `1769400000000_add_fingerprint_and_ip.ts` — Adds `hardware_fingerprint` and `submitter_ip` columns
+
+**Important:** The `builder_tag` column is defined directly in the create table migration. A separate migration for it was removed after causing a production deploy failure (duplicate column error). Do not create separate migrations for columns that already exist in the base migration.
+
+### Schema (submissions table)
+- `id` (auto-increment primary key)
+- `repository_id` (unique, not null)
+- `cpu_model`, `cpu_cores`, `cpu_threads`, `ram_gb`, `disk_type` (hardware info)
+- `gpu_model` (nullable)
+- `cpu_score`, `memory_score`, `disk_read_score`, `disk_write_score` (benchmark scores)
+- `ai_tokens_per_second`, `ai_time_to_first_token` (nullable AI metrics)
+- `nomad_score`, `nomad_version`, `benchmark_version` (benchmark metadata)
+- `builder_tag` (nullable, max 100 chars — community display name)
+- `hardware_fingerprint` (nullable, indexed — hash of cpu_model|gpu_model|ram_gb|builder_tag for duplicate detection)
+- `submitter_ip` (nullable, max 45 chars for IPv6 — **never expose publicly**)
+- `created_at` (timestamp)
+- Index: `idx_submissions_nomad_score` on `nomad_score DESC`
+
 ## API Endpoints
-- `POST /api/v1/submit` — Submit benchmark results (rate-limited)
+- `POST /api/v1/submit` — Submit benchmark results (requires HMAC verification + rate limiting)
 - `GET /api/v1/leaderboard` — Get leaderboard data
 - `GET /api/v1/stats` — Get statistics
 - `GET /api/v1/submission/:id` — Get specific submission
+- `GET /api/health` — Health check (returns `{ status: 'ok' }`)
 
 ## Development
 ```bash
@@ -88,9 +112,12 @@ npm install
 node ace migration:run
 npm run dev          # Starts on http://localhost:3333
 ```
+Local database: `tmp/database.sqlite` (auto-created)
 
 ## Deployment
 Deployed on Render. Push to `master` triggers auto-deploy.
-```bash
-npm run build        # Compiles AdonisJS + React
-```
+
+- **Build command:** `npm ci && npm run build`
+- **Pre-deploy:** `cd build && node ace migration:run --force`
+- **Persistent disk:** 1 GB at `/data` (SQLite database lives at `/data/database.sqlite`)
+- **Port:** 10000 (Render default)
